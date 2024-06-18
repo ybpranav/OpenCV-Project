@@ -1,0 +1,2 @@
+import cv2 as c
+net=c.dnn.readNetFromTensorflow("C:\Projects\OpenCV\models\ssd_mobilenet_v2_coco_2018_03_29\frozen_inference_graph.pb","C:\Projects\OpenCV\models\ssd_mobilenet_v2_coco_2018_03_29.pbtxt")

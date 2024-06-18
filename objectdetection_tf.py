@@ -36,7 +36,7 @@ with open(classFile,"r") as fp:
 configFile = os.path.join("models", "ssd_mobilenet_v2_coco_2018_03_29.pbtxt") """
 modelFile="C:\Projects\OpenCV\models\ssd_mobilenet_v2_coco_2018_03_29\frozen_inference_graph.pb"
 configFile="C:\Projects\OpenCV\models\ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
-net=c.dnn.readNetFromTensorflow(modelFile,configFile)
+net = c.dnn.readNetFromTensorflow("C:\Projects\OpenCV\models\ssd_mobilenet_v2_coco_2018_03_29\frozen_inference_graph.pb", configFile)
 class objectDetection():
     def __init__(self,net,im):
         self.net=net
