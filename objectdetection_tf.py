@@ -2,6 +2,7 @@ import os
 import cv2 as c
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 from zipfile import ZipFile
 from urllib.request import urlretrieve
  
@@ -35,20 +36,63 @@ class objectDetection():
     def __init__(self):
         pass
 
-    def cam(self):
-        print("camera")
+    def liveDetection(self):
+        thresh=0.5
+        net=self.net
+        s=0
+        if len(sys.argv)>1:
+            s=sys.argv[1]
+        src=c.VideoCapture(s)
+        window="Object Detection Using TF (Live)"
+        c.namedWindow(window)
+        while c.waitKey(1)!=27:
+            bool,frame=src.read()
+            frame=c.flip(frame,1)
+            if not bool:
+                print("Error in Reading Frame")
+                continue
+            else:
+                """ c.imshow(window,c.flip(frame,1)) """
+                height=frame.shape[0]
+                width=frame.shape[1]
+                blob=c.dnn.blobFromImage(frame,1.0,size=(300,300),mean=[0,0,0],swapRB=True,crop=False)
+                net.setInput(blob)
+                detections=net.forward()
+                for i in range(detections.shape[2]):
+                    labelId=int(detections[0,0,i,1])
+                    confidence=float(detections[0,0,i,2])
+                    if confidence > thresh:
+                        x_top_left=int(detections[0,0,i,3]*width)
+                        y_top_left=int(detections[0,0,i,4]*height)
+                        x_bottom_right=int(detections[0,0,i,5]*width)
+                        y_bottom_right=int(detections[0,0,i,6]*height)
+                        c.putText(frame,f"{self.labels[labelId]}",(x_top_left,(y_top_left-5)),c.FONT_HERSHEY_SIMPLEX,0.7,(0,255,0),1,c.LINE_AA)
+                        c.rectangle(frame,(x_top_left,y_top_left),(x_bottom_right,y_bottom_right),(255,255,255),thickness=2,lineType=c.LINE_AA)
+                c.imshow(window,frame)
+        c.destroyWindow(window)
+        """ print("camera") """
         
-    def im(self):
-        print("Image")
+    def inputImage(self):
+        thresh=0.5
+        net=self.net
+        window="Object Detection Using TF (Input Image)"
+        c.namedWindow(window)
+        print("\n**Select pre-loaded Sample Image**")
+        im_list=os.listdir("C:\Projects\OpenCV\images")
+        for i in range(len(im_list)):
+            print(f"{i+1}. {im_list[i]}")
+        num=int(input("Select Image"))
+        num=num-1
+        image=im_list[num]
 
 Obj_det=objectDetection()
 print("\n ***Object Detection Using OpenCV and TensorFLow with Pre-Trained Model*** \n")
 print("1. Detect Live Objects Through Camera \n2. Detect Objects Through input Image")
 select=int(input("Select Object Detection Method \n"))
 if select==1:
-    Obj_det.cam()
+    Obj_det.liveDetection()
 elif select==2:
-    Obj_det.im()
+    Obj_det.inputImage()
 else:
     print("Select Valid Method")
 
