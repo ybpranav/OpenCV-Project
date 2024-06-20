@@ -96,14 +96,18 @@ class objectDetection():
                 blob=c.dnn.blobFromImage(im_Arr,1.0,size=(300,300),mean=[0,0,0],swapRB=True,crop=False)
                 net.setInput(blob)
                 object=net.forward()
+                imgExtract=dict({})
                 for i in range(object.shape[2]):
                     imId=int(object[0,0,i,1])
                     conf=float(object[0,0,i,2])
                     if conf > thresh:
+                        if not imgExtract.get(self.labels[imId]):
+                            imgExtract[self.labels[imId]]=[]
                         xtop=int(object[0,0,i,3]*width)
                         ytop=int(object[0,0,i,4]*height)
                         xbottom=int(object[0,0,i,5]*width)
                         ybottom=int(object[0,0,i,6]*height)
+                        imgExtract[self.labels[imId]].append((xtop,ytop,xbottom,ybottom))
                         c.putText(im_Arr,f"{self.labels[imId]}",(xtop,ytop-5),c.FONT_HERSHEY_SIMPLEX,0.7,(0,255,0),1,c.LINE_AA)
                         c.rectangle(im_Arr,(xtop,ytop),(xbottom,ybottom),(255,255,255),thickness=2,)
                         objSet.add(self.labels[imId])
@@ -113,6 +117,15 @@ class objectDetection():
                 for x in objSet:
                     objDict[x]=objList.count(x)
                 print(objDict)
+                """ print(imgExtract) """
+                print("Select the Object you want to Extract")
+                settolist=list(objSet)
+                for i,x in enumerate(settolist):
+                    print(f"{i+1}. {x}")
+                select=int(input())
+                selectedObj=settolist[select-1]
+                for i,x in enumerate(imgExtract[selectedObj]):
+                    c.imshow(f"object{i+1}",im_Arr[x[1]:x[3],x[0]:x[2]])
                 c.waitKey(0)
                 c.destroyAllWindows()
             except:
