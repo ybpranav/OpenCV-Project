@@ -73,18 +73,52 @@ class objectDetection():
         """ print("camera") """
         
     def inputImage(self):
-        thresh=0.5
-        net=self.net
-        window="Object Detection Using TF (Input Image)"
-        c.namedWindow(window)
-        print("\n**Select pre-loaded Sample Image**")
-        im_list=os.listdir("C:\Projects\OpenCV\images")
-        for i in range(len(im_list)):
-            print(f"{i+1}. {im_list[i]}")
-        num=int(input("Select Image"))
-        num=num-1
-        image=im_list[num]
+            objSet=set({})
+            objList=list([])
+            objDict=dict({})
+            thresh=0.5
+            net=self.net
+            """ window="Object Detection Using TF (Input Image)"
+            c.namedWindow(window) """
+            print("\n**Select pre-loaded Sample Image**")
+            im_list=os.listdir("C:\Projects\OpenCV\images")
+            print(im_list)
+            for i in range(len(im_list)):
+                print(f"{i+1}. {im_list[i]}")
+            num=int(input("Select Image \n"))
+            num=num-1
+            image=im_list[num]
+            imPath="C:\Projects\OpenCV\images\\"+image
+            try:
+                im_Arr=c.imread(imPath)
+                height=im_Arr.shape[0]
+                width=im_Arr.shape[1]
+                blob=c.dnn.blobFromImage(im_Arr,1.0,size=(300,300),mean=[0,0,0],swapRB=True,crop=False)
+                net.setInput(blob)
+                object=net.forward()
+                for i in range(object.shape[2]):
+                    imId=int(object[0,0,i,1])
+                    conf=float(object[0,0,i,2])
+                    if conf > thresh:
+                        xtop=int(object[0,0,i,3]*width)
+                        ytop=int(object[0,0,i,4]*height)
+                        xbottom=int(object[0,0,i,5]*width)
+                        ybottom=int(object[0,0,i,6]*height)
+                        c.putText(im_Arr,f"{self.labels[imId]}",(xtop,ytop-5),c.FONT_HERSHEY_SIMPLEX,0.7,(0,255,0),1,c.LINE_AA)
+                        c.rectangle(im_Arr,(xtop,ytop),(xbottom,ybottom),(255,255,255),thickness=2,)
+                        objSet.add(self.labels[imId])
+                        objList.append(self.labels[imId])
+                c.imshow("Image Extraction",im_Arr)
+                print("Object Identified in the Image")
+                for x in objSet:
+                    objDict[x]=objList.count(x)
+                print(objDict)
+                c.waitKey(0)
+                c.destroyAllWindows()
+            except:
+                print("Unable to read the input image....")
 
+            
 Obj_det=objectDetection()
 print("\n ***Object Detection Using OpenCV and TensorFLow with Pre-Trained Model*** \n")
 print("1. Detect Live Objects Through Camera \n2. Detect Objects Through input Image")
